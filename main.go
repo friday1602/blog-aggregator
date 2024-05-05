@@ -1,14 +1,21 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/friday1602/blog-aggregator/internal/database"
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
+
+type apiConfig struct {
+	DB *database.Queries
+}
 
 func main() {
 	err := godotenv.Load()
@@ -16,22 +23,37 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	dbURL := os.Getenv("DSN")
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	apiCfg := apiConfig{}
+	apiCfg.DB = database.New(db)
+
 	port := os.Getenv("PORT")
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/hello-world", func(w http.ResponseWriter, r *http.Request) { fmt.Fprintf(w, "Hello World!") })
 	mux.HandleFunc("GET /v1/readiness", readinessHandler)
 	mux.HandleFunc("GET /v1/err", errHandler)
+	mux.HandleFunc("POST /v1/users", apiCfg.createUserHandler)
 
+	srv := http.Server{
+		Addr: port,
+		Handler: mux,
+	}
+	
 	log.Println("starting server on port", port)
-	err = http.ListenAndServe(port, mux)
+	err = srv.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 }
 
-func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
+func responseWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)
 	if err != nil {
 		http.Error(w, "failed to marshal json", http.StatusInternalServerError)
@@ -44,8 +66,8 @@ func respondWithJSON(w http.ResponseWriter, status int, payload interface{}) {
 
 }
 
-func respondWithError(w http.ResponseWriter, code int, msg string) {
-	response, err := json.Marshal(struct{
+func responseWithError(w http.ResponseWriter, code int, msg string) {
+	response, err := json.Marshal(struct {
 		Error string `error:"json"`
 	}{
 		Error: msg,
@@ -55,10 +77,8 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 		return
 	}
 
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
-
 
 }
