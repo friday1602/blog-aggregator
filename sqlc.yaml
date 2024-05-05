@@ -3,6 +3,8 @@ sql:
   - schema: "sql/schema"
     queries: "sql/queries"
     engine: "postgresql"
+    database:
+      uri: ${DATABASE_URI}
     gen:
       go:
         out: "internal/database"
