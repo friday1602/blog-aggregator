@@ -20,7 +20,8 @@ func (a *apiConfig) getUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	responseWithJSON(w, http.StatusOK, db)
+	userDB := userDatabaseToUser(db)
+	responseWithJSON(w, http.StatusOK, userDB)
 
 }
 
