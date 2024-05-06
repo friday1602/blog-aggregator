@@ -39,12 +39,13 @@ func main() {
 	mux.HandleFunc("GET /v1/readiness", readinessHandler)
 	mux.HandleFunc("GET /v1/err", errHandler)
 	mux.HandleFunc("POST /v1/users", apiCfg.createUserHandler)
+	mux.HandleFunc("GET /v1/users", apiCfg.getUserHandler)
 
 	srv := http.Server{
-		Addr: port,
+		Addr:    port,
 		Handler: mux,
 	}
-	
+
 	log.Println("starting server on port", port)
 	err = srv.ListenAndServe()
 	if err != nil {
