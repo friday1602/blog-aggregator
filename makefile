@@ -13,3 +13,6 @@ connectDB:
 
 statusDB:
 	@goose -dir ./sql/schema postgres $(DATABASE_URI) status
+
+startDBServer:
+	pg_ctl -D /d/postgresql/pgsql/mydata/ start
