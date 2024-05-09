@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -22,7 +21,7 @@ func (a *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := a.DB.CreateUser(context.Background(), database.CreateUserParams{
+	db, err := a.DB.CreateUser(r.Context(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -30,12 +29,9 @@ func (a *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		responseWithError(w, http.StatusInternalServerError, "Error creating user")
-		return 
+		return
 	}
 
 	responseWithJSON(w, http.StatusCreated, db)
-
-
-
 
 }

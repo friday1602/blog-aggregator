@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -26,7 +25,7 @@ func (a *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc {
 			return
 		}
 
-		db, err := a.DB.GetUserByAPI(context.Background(), apiKey)
+		db, err := a.DB.GetUserByAPI(r.Context(), apiKey)
 		if err != nil {
 			responseWithError(w, http.StatusUnauthorized, "unauthorized")
 			return
