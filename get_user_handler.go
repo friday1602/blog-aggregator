@@ -1,37 +1,15 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"net/http"
-	"strings"
+
+	"github.com/friday1602/blog-aggregator/internal/database"
 )
 
-func (a *apiConfig) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	apiKey, err := getAPIkey(r.Header)
-	if err != nil {
-		responseWithError(w, http.StatusBadRequest, err.Error())
-		return
-	}
+type authHandler func(http.ResponseWriter, *http.Request, database.User)
 
-	db, err := a.DB.GetUserByAPI(context.Background(), apiKey)
-	if err != nil {
-		responseWithError(w, http.StatusInternalServerError, "error get user from database")
-		return
-	}
-
+func getUserHandler(w http.ResponseWriter, r *http.Request, db database.User) {
 	userDB := userDatabaseToUser(db)
 	responseWithJSON(w, http.StatusOK, userDB)
-
-}
-
-func getAPIkey(header http.Header) (string, error) {
-	apiFromHeader := header.Get("Authorization")
-	apiParts := strings.Split(apiFromHeader, " ")
-
-	if len(apiParts) != 2 || apiParts[0] != "ApiKey" {
-		return "", errors.New("invalid apikey")
-	}
-	return apiParts[1], nil
 
 }

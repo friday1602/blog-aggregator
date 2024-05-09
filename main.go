@@ -24,6 +24,7 @@ func main() {
 	}
 
 	dbURL := os.Getenv("DSN")
+	log.Println(dbURL)
 	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
 		log.Fatal(err)
@@ -39,7 +40,8 @@ func main() {
 	mux.HandleFunc("GET /v1/readiness", readinessHandler)
 	mux.HandleFunc("GET /v1/err", errHandler)
 	mux.HandleFunc("POST /v1/users", apiCfg.createUserHandler)
-	mux.HandleFunc("GET /v1/users", apiCfg.getUserHandler)
+	mux.HandleFunc("GET /v1/users", apiCfg.middlewareAuth(getUserHandler))
+	mux.HandleFunc("POST /v1/feeds", apiCfg.middlewareAuth(apiCfg.createFeed))
 
 	srv := http.Server{
 		Addr:    port,
