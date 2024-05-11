@@ -40,7 +40,27 @@ func (a *apiConfig) createFeed(w http.ResponseWriter, r *http.Request, db databa
 		return
 	}
 
+	feedFollows := database.CreateFeedFollowsParams{
+		ID:        uuid.New(),
+		FeedID:    feedParams.ID,
+		UserID:    db.ID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+	createdFeedFollows, err := a.DB.CreateFeedFollows(r.Context(), feedFollows)
+	if err != nil {
+		responseWithError(w, http.StatusInternalServerError, "error creating feed follows")
+		return
+	}
+
 	respFeed := feedDatabaseToFeed(feed)
-	responseWithJSON(w, http.StatusCreated, respFeed)
+	respFeedFollows := feedFollowDatabaseToFeedFollow(createdFeedFollows)
+
+	resp := FeedCreatedResp{
+		Feed: respFeed,
+		FeedFollows: respFeedFollows,
+	}
+
+	responseWithJSON(w, http.StatusCreated, resp)
 
 }

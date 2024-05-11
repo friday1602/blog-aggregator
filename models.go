@@ -32,6 +32,11 @@ type FeedFollows struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type FeedCreatedResp struct {
+	Feed        Feed        `json:"feed"`
+	FeedFollows FeedFollows `json:"feed_follow"`
+}
+
 func userDatabaseToUser(user database.User) User {
 	return User{
 		ID:        user.ID,
@@ -71,4 +76,13 @@ func feedFollowDatabaseToFeedFollow(feedfollows database.FeedFollow) FeedFollows
 		UpdatedAt: feedfollows.UpdatedAt,
 	}
 
+}
+
+func feedFollowsDatabaseToFeedFollows(feedfollows []database.FeedFollow) []FeedFollows {
+	newFeedfollows := make([]FeedFollows, 0, len(feedfollows))
+	for _, feedfollow := range feedfollows {
+		newFeedfollows = append(newFeedfollows, feedFollowDatabaseToFeedFollow(feedfollow))
+	}
+
+	return newFeedfollows
 }

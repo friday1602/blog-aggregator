@@ -21,7 +21,7 @@ func (a *apiConfig) middlewareAuth(handler authHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		apiKey, err := getAPIkey(r.Header)
 		if err != nil {
-			responseWithError(w, http.StatusBadRequest, err.Error())
+			responseWithError(w, http.StatusNotFound, err.Error())
 			return
 		}
 
