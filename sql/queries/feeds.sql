@@ -12,5 +12,5 @@ ORDER BY last_fetch_at ASC NULLS FIRST;
 
 -- name: MarkFeedFetch :exec
 UPDATE feeds
-SET last_fetch_at = $1, updated_at = $2
-WHERE id = $3;
+SET last_fetch_at = NOW(), updated_at = NOW()
+WHERE id = $1;
