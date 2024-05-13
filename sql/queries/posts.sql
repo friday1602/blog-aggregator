@@ -4,9 +4,10 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetPostByUser :many
-SELECT * FROM posts
+SELECT posts.* FROM posts
 INNER JOIN feed_follows on posts.feed_id = feed_follows.feed_id
-WHERE user_id = $1;
+WHERE feed_follows.user_id = $1
+LIMIT $2;
 
 
 

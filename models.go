@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/friday1602/blog-aggregator/internal/database"
@@ -35,6 +36,17 @@ type FeedFollows struct {
 type FeedCreatedResp struct {
 	Feed        Feed        `json:"feed"`
 	FeedFollows FeedFollows `json:"feed_follow"`
+}
+
+type Post struct {
+	ID          uuid.UUID      `json:"id"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	Title       string         `json:"title"`
+	Url         string         `json:"url"`
+	Description sql.NullString `json:"description"`
+	PublishedAt time.Time      `json:"published_at"`
+	FeedID      uuid.UUID      `json:"feed_id"`
 }
 
 func userDatabaseToUser(user database.User) User {
@@ -85,4 +97,25 @@ func feedFollowsDatabaseToFeedFollows(feedfollows []database.FeedFollow) []FeedF
 	}
 
 	return newFeedfollows
+}
+
+func postDatabaseToPost(post database.Post) Post {
+	return Post{
+		post.ID,
+		post.CreatedAt,
+		post.UpdatedAt,
+		post.Title,
+		post.Url,
+		post.Description,
+		post.PublishedAt,
+		post.FeedID,
+	}
+}
+
+func postsDatabaseToPosts(postsDB []database.Post) []Post {
+	posts := make([]Post, 0, len(postsDB))
+	for _, post := range postsDB {
+		posts = append(posts, postDatabaseToPost(post))
+	}
+	return posts
 }

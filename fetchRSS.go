@@ -120,7 +120,6 @@ func worker(db *database.Queries, fetchInterval time.Duration, feedFetchedPerInt
 							continue
 						}
 						log.Println("error creating post:", err)
-						continue
 					}
 				}
 
