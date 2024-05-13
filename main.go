@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/friday1602/blog-aggregator/internal/database"
 	"github.com/joho/godotenv"
@@ -29,8 +30,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	apiCfg := apiConfig{}
-	apiCfg.DB = database.New(db)
+	newDB := database.New(db)
+	apiCfg := apiConfig{
+		DB: newDB,
+	}
+
+	go worker(newDB, 60*time.Second, 10)
 
 	port := os.Getenv("PORT")
 	mux := http.NewServeMux()
