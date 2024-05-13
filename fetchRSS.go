@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/friday1602/blog-aggregator/internal/database"
+	"github.com/google/uuid"
 )
 
 type RSS struct {
@@ -55,6 +58,7 @@ func fetchRSS(url string) (RSS, error) {
 
 }
 
+// scrap post and save to posts table on database
 func worker(db *database.Queries, fetchInterval time.Duration, feedFetchedPerInterval int32) {
 	// wait 60 sec interval
 	interval := time.NewTicker(fetchInterval)
@@ -74,7 +78,6 @@ func worker(db *database.Queries, fetchInterval time.Duration, feedFetchedPerInt
 
 			go func(feed database.Feed) {
 				defer wg.Done()
-
 				// marking feed fetched
 				err = db.MarkFeedFetch(context.Background(), feed.ID)
 				if err != nil {
@@ -83,7 +86,7 @@ func worker(db *database.Queries, fetchInterval time.Duration, feedFetchedPerInt
 				}
 
 				// fetching each feed
-				rss, err := fetchRSS(feed.Name)
+				rss, err := fetchRSS(feed.Url)
 				if err != nil {
 					log.Println("error fetching feeds:", err)
 					return
@@ -91,7 +94,34 @@ func worker(db *database.Queries, fetchInterval time.Duration, feedFetchedPerInt
 
 				// processing fetch data
 				for _, item := range rss.Channel.Item {
-					log.Println("Found Post", item.Title, "on feed", feed.Name)
+					pubDate, err := time.Parse(time.RFC1123Z, item.PubDate)
+					if err != nil {
+						log.Println("error parsing pubdate:", err)
+						continue
+					}
+
+					description := sql.NullString{}
+					if item.Description != "" {
+						description.String = item.Description
+						description.Valid = true
+					}
+					_, err = db.CreatePost(context.Background(), database.CreatePostParams{
+						ID: uuid.New(),
+						CreatedAt: time.Now(),
+						UpdatedAt: time.Now(),
+						Title: item.Title,
+						Url: item.Link,
+						Description: description,
+						PublishedAt: pubDate,
+						FeedID: feed.ID,
+					})
+					if err != nil {
+						if strings.Contains(err.Error(), "duplicate key") {
+							continue
+						}
+						log.Println("error creating post:", err)
+						continue
+					}
 				}
 
 			}(feed)
