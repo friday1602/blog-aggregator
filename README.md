@@ -35,13 +35,13 @@ go mod download
 ```
 go install github.com/pressly/goose/v3/cmd/goose@latest
 ```
-4.Configure environment variables:
+4. Configure environment variables:
 - Edit the `.env` file with your configurations.
-5.Run database migrations:
+5. Run database migrations:
 ```
 goose -dir sql/schema postgres <database_connection_string> up
 ```
-6.Build and run the application:
+6. Build and run the application:
 ```
 go build -o blog-aggregator && ./blog-aggregator
 ```
