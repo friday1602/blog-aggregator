@@ -13,6 +13,8 @@ type user struct {
 	Name string `json:"name"`
 }
 
+type authHandler func(http.ResponseWriter, *http.Request, database.User)
+
 func (a *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	var user user
 	err := json.NewDecoder(r.Body).Decode(&user)
@@ -33,5 +35,11 @@ func (a *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseWithJSON(w, http.StatusCreated, db)
+
+}
+
+func getUserHandler(w http.ResponseWriter, r *http.Request, db database.User) {
+	userDB := userDatabaseToUser(db)
+	responseWithJSON(w, http.StatusOK, userDB)
 
 }

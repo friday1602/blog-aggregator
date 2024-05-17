@@ -64,3 +64,14 @@ func (a *apiConfig) createFeed(w http.ResponseWriter, r *http.Request, db databa
 	responseWithJSON(w, http.StatusCreated, resp)
 
 }
+
+
+func (a *apiConfig) getFeedsHandler(w http.ResponseWriter, r *http.Request) {
+	feeds, err := a.DB.GetFeed(r.Context())
+	if err != nil {
+		responseWithError(w, http.StatusInternalServerError, "error getting feeds")
+		return
+	}
+	responseWithJSON(w, http.StatusOK, feedsDatabaseToFeeds(feeds))
+
+}
