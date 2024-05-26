@@ -54,6 +54,7 @@ func main() {
 	srv := http.Server{
 		Addr:    port,
 		Handler: mux,
+		ReadHeaderTimeout: 5 * time.Second,
 	}
 
 	log.Println("starting server on port", port)
